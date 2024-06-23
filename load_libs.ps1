@@ -3,7 +3,7 @@
 # Figure out what deps are missing
 
 # try {
-#     Add-Type "C:\Users\jehu.BUSVILLAGE\source\sqlalchemy_merge\PSScripts\Libraries\System.Text.Json.8.0.3\lib\netstandard2.0\System.Text.Json.dll"
+#     Add-Type "C:\some_path\PSScripts\Libraries\System.Text.Json.8.0.3\lib\netstandard2.0\System.Text.Json.dll"
 # } catch [System.Reflection.ReflectionTypeLoadException] {
 #     $_.Exception.LoaderExceptions | ForEach-Object { $_.Message }
 # } catch {
