@@ -106,6 +106,7 @@
 
 # Load necessary .NET assemblies
 Add-Type -AssemblyName System.Data
+Add-Type -Path "$PSScriptRoot\oracle.manageddataaccess.core.23.4.0\lib\netstandard2.1\Oracle.ManagedDataAccess.dll"
 
 # Define SQL Server connection parameters
 $SQL_SERVER_INSTANCE = "Server\Instance"
