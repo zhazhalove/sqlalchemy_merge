@@ -209,7 +209,7 @@ foreach ($row in $resultSet.Rows) {
 
     $row # debug
 
-    $employee_id = $row["employee_id"]
+    [int]$employee_id = $row["employee_id"]
     $exists = RowExists -employee_id $employee_id
 
     # Open SQL Server connection
