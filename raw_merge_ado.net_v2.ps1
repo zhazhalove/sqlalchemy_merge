@@ -1,3 +1,5 @@
+# **** Only works with PowerShell 7.4 because of oracle assembly ****
+
 # Load necessary .NET assemblies
 Add-Type -AssemblyName System.Data
 Add-Type -Path "$PSScriptRoot\oracle.manageddataaccess.core.23.4.0\lib\netstandard2.1\Oracle.ManagedDataAccess.dll"

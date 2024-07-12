@@ -1,3 +1,5 @@
+# **** Only works with PowerShell 7.4 because of oracle assembly ****
+
 # CREATE PROCEDURE sp_updateCombinedEmployees
 #     @employee_id NUMERIC(6,0),
 #     @first_name VARCHAR(20),
