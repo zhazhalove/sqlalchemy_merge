@@ -1,11 +1,8 @@
-class IDatabase {
-    [void] OpenConnection() { throw "NotImplementedException" }
-    [void] CloseConnection() { throw "NotImplementedException" }
-    [void] ExecuteDml() { throw "NotImplementedException" }
-}
+# Load the IDatabase module
+#Import-Module -Name "$PSScriptRoot\IDatabaseModule.psm1"
 
 
-class SqlServerDatabase : IDatabase {
+class SqlServerDatabase : DatabaseNamespace.IDatabase {
     [string]$serverName
     [string]$databaseName
     [System.Data.SqlClient.SqlConnection]$conn
@@ -92,7 +89,7 @@ function Invoke-DatabaseOperation {
     [CmdletBinding()]
     param (
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
-        [IDatabase]$DatabaseObject
+        [DatabaseNamespace.IDatabase]$DatabaseObject
     )
 
     begin {
@@ -101,7 +98,7 @@ function Invoke-DatabaseOperation {
     }
 
     process {
-        if ($DatabaseObject -is [IDatabase]) {
+        if ($DatabaseObject -is [DatabaseNamespace.IDatabase]) {
             try {
                 # Open the database connection
                 $DatabaseObject.OpenConnection()
@@ -151,7 +148,7 @@ $addresses = @("123 Main St", "456 Oak St", "789 Pine St", "101 Maple Ave", "202
 
 $sqlData = @()
 
-for ($i = 1; $i -le 30; $i++) {
+for ($i = 1; $i -le 500000; $i++) {
     $randomFirst = $firstNames[$random.Next(0, $firstNames.Length)]
     $randomLast = $lastNames[$random.Next(0, $lastNames.Length)]
     $randomTitle = $titles[$random.Next(0, $titles.Length)]
