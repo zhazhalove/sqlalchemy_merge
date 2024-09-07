@@ -183,9 +183,9 @@ for ($i = 1; $i -le 500000; $i++) {
     $sqlData += $row
 }
 
-# Create the SqlServerDatabase object with the full data list
+
 $sqlServerObj = [SqlServerDatabase]::new("localhost\DB2016", "TSQL2012", $sqlData)
 
-# Invoke the database operation and capture the result
+
 $sqlServerObj | Invoke-DatabaseOperation
 
