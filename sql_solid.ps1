@@ -148,7 +148,9 @@ $addresses = @("123 Main St", "456 Oak St", "789 Pine St", "101 Maple Ave", "202
 
 $sqlData = @()
 
-for ($i = 1; $i -le 500000; $i++) {
+Write-Host "Generating Test Data" -ForegroundColor Green
+
+for ($i = 1; $i -le 50000; $i++) {
     $randomFirst = $firstNames[$random.Next(0, $firstNames.Length)]
     $randomLast = $lastNames[$random.Next(0, $lastNames.Length)]
     $randomTitle = $titles[$random.Next(0, $titles.Length)]
@@ -181,8 +183,10 @@ for ($i = 1; $i -le 500000; $i++) {
     }
 
     $sqlData += $row
+    
+    Write-Host $row
+    Write-Host "---------------------------------------------------"
 }
-
 
 $sqlServerObj = [SqlServerDatabase]::new("localhost\DB2016", "TSQL2012", $sqlData)
 
