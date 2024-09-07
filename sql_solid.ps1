@@ -136,7 +136,7 @@ function Invoke-DatabaseOperation {
 ######################## Main Program #############################
 
 
-# Generate random values for 30 rows of data
+# generate test data
 $random = New-Object System.Random
 $firstNames = @("John", "Jane", "Mike", "Emily", "Jake", "Laura", "David", "Mia", "Tom", "Anna")
 $lastNames = @("Doe", "Smith", "Johnson", "Brown", "Davis", "Wilson", "Anderson", "Taylor", "Moore", "Clark")
