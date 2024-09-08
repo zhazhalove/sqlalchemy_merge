@@ -138,7 +138,7 @@ try {
 
 } catch {
     # Handle connection-level or overall errors
-    Write-Host "Failed to open connection or run query." -ForegroundColor Red
+    Write-Host "Connection error" -ForegroundColor Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "$($_.ScriptStackTrace)" -ForegroundColor Red
 
