@@ -1,15 +1,68 @@
-# Connection details
+################### Global variables #######################
 $serverName = "your_sql_server"
 $databaseName = "your_database"
 $connString = "Server=$serverName;Database=$databaseName;Integrated Security=True;"
-$sqlTemplate = "INSERT INTO your_table (Name, Age) VALUES (@Name, @Age)"
+$sqlTemplate = @"
+            INSERT INTO [HR].[Employees_copy]
+            (lastname, firstname, title, titleofcourtesy, birthdate, hiredate, address, city, region, postalcode, country, phone, mgrid) 
+            VALUES (@lastname, @firstname, @title, @titleofcourtesy, @birthdate, @hiredate, @address, @city, @region, @postalcode, @country, @phone, @mgrid)
+"@
 
-  # Data to insert, replace with your actual data
-  $data = @(
-    @{Name="John"; Age=30},
-    @{Name="Jane"; Age=25},
-    @{Name="Doe"; Age=35}
-)
+
+
+##################### Test Data ################################
+
+# generate test data
+$random = New-Object System.Random
+$firstNames = @("John", "Jane", "Mike", "Emily", "Jake", "Laura", "David", "Mia", "Tom", "Anna")
+$lastNames = @("Doe", "Smith", "Johnson", "Brown", "Davis", "Wilson", "Anderson", "Taylor", "Moore", "Clark")
+$titles = @("Manager", "Engineer", "Technician", "Clerk", "Director")
+$titleOfCourtesy = @("Mr.", "Mrs.", "Ms.", "Dr.")
+$cities = @("New York", "Los Angeles", "Chicago", "Houston", "Phoenix")
+$countries = @("USA", "Canada", "Mexico", "UK", "Germany")
+$addresses = @("123 Main St", "456 Oak St", "789 Pine St", "101 Maple Ave", "202 Elm St")
+
+$sqlData = @()
+
+Write-Host "Generating Test Data" -ForegroundColor Green
+
+for ($i = 1; $i -le 500; $i++) {
+    $randomFirst = $firstNames[$random.Next(0, $firstNames.Length)]
+    $randomLast = $lastNames[$random.Next(0, $lastNames.Length)]
+    $randomTitle = $titles[$random.Next(0, $titles.Length)]
+    $randomCourtesy = $titleOfCourtesy[$random.Next(0, $titleOfCourtesy.Length)]
+    $randomCity = $cities[$random.Next(0, $cities.Length)]
+    $randomCountry = $countries[$random.Next(0, $countries.Length)]
+    $randomAddress = $addresses[$random.Next(0, $addresses.Length)]
+
+    # Generate phone number
+    $phoneAreaCode = $random.Next(100, 999).ToString()  # 3 digits
+    $phonePrefix = $random.Next(100, 999).ToString()    # 3 digits
+    $phoneLineNumber = $random.Next(1000, 9999).ToString()  # 4 digits
+    $randomPhone = "$phoneAreaCode-$phonePrefix-$phoneLineNumber"
+
+    # Generating data for each row
+    $row = @{
+        "lastname"        = $randomLast
+        "firstname"       = $randomFirst
+        "title"           = $randomTitle
+        "titleofcourtesy" = $randomCourtesy
+        "birthdate"       = (Get-Date).AddYears(-$random.Next(25, 60))  # Random birthdate
+        "hiredate"        = (Get-Date).AddYears(-$random.Next(1, 10))  # Random hiredate
+        "address"         = $randomAddress
+        "city"            = $randomCity
+        "region"          = $null  # No region by default
+        "postalcode"      = $random.Next(10000, 99999).ToString()
+        "country"         = $randomCountry
+        "phone"           = $randomPhone
+        "mgrid"           = $null  # No manager for simplicity
+    }
+
+    $sqlData += $row
+}
+
+
+######################## SQL Operations ############################
 
 # Create a connection object
 $conn = New-Object System.Data.SqlClient.SqlConnection
@@ -22,26 +75,50 @@ try {
 
     # Create a SQL Command object outside of the loop (singleton pattern)
     $cmd = $conn.CreateCommand()
-    $cmd.CommandText = $sqlTemplate
-    
-    # Create the parameters once and reuse them
-    $paramName = $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@Name", [System.Data.SqlDbType]::NVarChar)))
-    $paramAge = $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@Age", [System.Data.SqlDbType]::Int)))
 
-    # Insert data for each object in $data array
-    $data | ForEach-Object {
+    $sqlData | ForEach-Object {
         try {
-            # Set the values for the parameters
-            $paramName.Value = $_.Name
-            $paramAge.Value = $_.Age
+            $cmd.CommandText = $sqlTemplate
+
+            # clear pervious parm values
+            $cmd.Parameters.Clear()
+
+            # Add parameters for each column
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@lastname", [System.Data.SqlDbType]::NVarChar, 20))).Value = $_["lastname"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@firstname", [System.Data.SqlDbType]::NVarChar, 10))).Value = $_["firstname"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@title", [System.Data.SqlDbType]::NVarChar, 30))).Value = $_["title"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@titleofcourtesy", [System.Data.SqlDbType]::NVarChar, 25))).Value = $_["titleofcourtesy"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@birthdate", [System.Data.SqlDbType]::DateTime))).Value = $_["birthdate"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@hiredate", [System.Data.SqlDbType]::DateTime))).Value = $_["hiredate"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@address", [System.Data.SqlDbType]::NVarChar, 60))).Value = $_["address"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@city", [System.Data.SqlDbType]::NVarChar, 15))).Value = $_["city"]
+
+            # Check for null value in region and assign DBNull if necessary
+            if ($null -eq $_["region"]) {
+                $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@region", [System.Data.SqlDbType]::NVarChar, 15))).Value = [DBNull]::Value
+            } else {
+                $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@region", [System.Data.SqlDbType]::NVarChar, 15))).Value = $_["region"]
+            }
+
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@postalcode", [System.Data.SqlDbType]::NVarChar, 10))).Value = $_["postalcode"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@country", [System.Data.SqlDbType]::NVarChar, 15))).Value = $_["country"]
+            $cmd.cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@phone", [System.Data.SqlDbType]::NVarChar, 24))).Value = $_["phone"]
+
+            # Check for null value in mgrid and assign DBNull if necessary
+            if ($null -eq $_["mgrid"]) {
+                $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@mgrid", [System.Data.SqlDbType]::Int))).Value = [DBNull]::Value
+            } else {
+                $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@mgrid", [System.Data.SqlDbType]::Int))).Value = $_["mgrid"]
+            }
+
 
             # Execute the insert command
             $cmd.ExecuteNonQuery()
+
             Write-Host "Inserted record for Name: $($_.Name)" -ForegroundColor Green
+        
         } catch {
-            # Handle errors during individual insert execution
-            Write-Host "Failed to insert record for Name: $($_.Name)" -ForegroundColor Red
-            Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "SQL Error: $($_.Exception.Message)" -ForegroundColor Red
         }
     }
 } catch {
