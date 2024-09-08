@@ -58,7 +58,7 @@ for ($i = 1; $i -le 50000; $i++) {
         "mgrid"           = $null  # No manager for simplicity
     }
 
-    Write-Host $row -ForegroundColor Green
+    Write-Host $row -ForegroundColor Yellow
     Write-Host "----------------------------------------------"
     $sqlData += $row
 }
