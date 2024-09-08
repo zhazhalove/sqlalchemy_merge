@@ -9,7 +9,6 @@ $sqlTemplate = @"
 "@
 
 
-
 ##################### Test Data ################################
 
 # generate test data
@@ -75,8 +74,13 @@ try {
     $conn.Open()
     Write-Host "Connection opened successfully."
 
+    # Start transaction
+    $transaction = $conn.BeginTransaction()
+    Write-Host "Transaction started."
+
     # Create a SQL Command object outside of the loop (singleton pattern)
     $cmd = $conn.CreateCommand()
+    $cmd.Transaction = $transaction  # Assign the transaction to the command
 
     $sqlData | ForEach-Object {
         try {
@@ -113,22 +117,37 @@ try {
                 $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@mgrid", [System.Data.SqlDbType]::Int))).Value = $_["mgrid"]
             }
 
-
             # Execute the insert command
             $cmd.ExecuteNonQuery() | Out-Null
-
             Write-Host "Inserted record: `n`r$($_.Keys) $($_.Values)`n`r" -ForegroundColor Green
-        
+
         } catch {
             Write-Host "SQL Error: $($_.Exception.Message)" -ForegroundColor Red
             Write-Host "$($_.ScriptStackTrace)" -ForegroundColor Red
+
+            # Rollback transaction in case of error
+            $transaction.Rollback()
+            Write-Host "Transaction rolled back." -ForegroundColor Red
+            break
         }
     }
+
+    # Commit the transaction if all records inserted successfully
+    $transaction.Commit()
+    Write-Host "Transaction committed." -ForegroundColor Green
+
 } catch {
     # Handle connection-level or overall errors
     Write-Host "Failed to open connection or run query." -ForegroundColor Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "$($_.ScriptStackTrace)" -ForegroundColor Red
+
+    # Rollback transaction in case of any overall error
+    if ($null -ne $transaction) {
+        $transaction.Rollback()
+        Write-Host "Transaction rolled back due to overall error." -ForegroundColor Red
+    }
+
 } finally {
     # Ensure the connection is closed
     if ($conn.State -eq 'Open') {
