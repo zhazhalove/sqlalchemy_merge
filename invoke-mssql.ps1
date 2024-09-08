@@ -26,7 +26,7 @@ $sqlData = @()
 
 Write-Host "Generating Test Data" -ForegroundColor Green
 
-for ($i = 1; $i -le 50000; $i++) {
+for ($i = 1; $i -le 5; $i++) {
     $randomFirst = $firstNames[$random.Next(0, $firstNames.Length)]
     $randomLast = $lastNames[$random.Next(0, $lastNames.Length)]
     $randomTitle = $titles[$random.Next(0, $titles.Length)]
@@ -115,9 +115,9 @@ try {
 
 
             # Execute the insert command
-            $cmd.ExecuteNonQuery()
+            $cmd.ExecuteNonQuery() | Out-Null
 
-            Write-Host "Inserted record for $($_)" -ForegroundColor Green
+            Write-Host "Inserted record: `n`r$($_.Keys) $($_.Values)`n`r" -ForegroundColor Green
         
         } catch {
             Write-Host "SQL Error: $($_.Exception.Message)" -ForegroundColor Red
