@@ -53,6 +53,12 @@ for ($i = 1; $i -le 50000; $i++) {
 Write-Host "Writing Test Data to Excel" -ForegroundColor Green
 
 # Export to Excel
-$sqlData | Export-Excel -Path "$PSScriptRoot\TestData.xlsx" -AutoSize -Force
+#$sqlData | Export-Excel -Path "$PSScriptRoot\TestData.xlsx" -AutoSize -Verbose
+
+$sqlData | ForEach-Object {
+    # Print each row to the console
+    Write-Host "Processing row: $($_.FirstName) $($_.LastName)" -ForegroundColor Yellow
+    $_  # Return the object back to the pipeline for Export-Excel
+} | Export-Excel -Path "$PSScriptRoot\TestData.xlsx" -AutoSize
 
 Write-Host "Test Data written to C:\temp\TestData.xlsx" -ForegroundColor Cyan
