@@ -1,6 +1,6 @@
 ################### Global variables #######################
-$serverName = "your_sql_server"
-$databaseName = "your_database"
+$serverName = "localhost\DB2016"
+$databaseName = "TSQL2012"
 $connString = "Server=$serverName;Database=$databaseName;Integrated Security=True;"
 $sqlTemplate = @"
             INSERT INTO [HR].[Employees_copy]
@@ -26,7 +26,7 @@ $sqlData = @()
 
 Write-Host "Generating Test Data" -ForegroundColor Green
 
-for ($i = 1; $i -le 500; $i++) {
+for ($i = 1; $i -le 50000; $i++) {
     $randomFirst = $firstNames[$random.Next(0, $firstNames.Length)]
     $randomLast = $lastNames[$random.Next(0, $lastNames.Length)]
     $randomTitle = $titles[$random.Next(0, $titles.Length)]
@@ -58,6 +58,8 @@ for ($i = 1; $i -le 500; $i++) {
         "mgrid"           = $null  # No manager for simplicity
     }
 
+    Write-Host $row -ForegroundColor Green
+    Write-Host "----------------------------------------------"
     $sqlData += $row
 }
 
@@ -102,7 +104,7 @@ try {
 
             $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@postalcode", [System.Data.SqlDbType]::NVarChar, 10))).Value = $_["postalcode"]
             $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@country", [System.Data.SqlDbType]::NVarChar, 15))).Value = $_["country"]
-            $cmd.cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@phone", [System.Data.SqlDbType]::NVarChar, 24))).Value = $_["phone"]
+            $cmd.Parameters.Add((New-Object Data.SqlClient.SqlParameter("@phone", [System.Data.SqlDbType]::NVarChar, 24))).Value = $_["phone"]
 
             # Check for null value in mgrid and assign DBNull if necessary
             if ($null -eq $_["mgrid"]) {
@@ -119,12 +121,14 @@ try {
         
         } catch {
             Write-Host "SQL Error: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "$($_.ScriptStackTrace)" -ForegroundColor Red
         }
     }
 } catch {
     # Handle connection-level or overall errors
     Write-Host "Failed to open connection or run query." -ForegroundColor Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "$($_.ScriptStackTrace)" -ForegroundColor Red
 } finally {
     # Ensure the connection is closed
     if ($conn.State -eq 'Open') {
