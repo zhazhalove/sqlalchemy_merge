@@ -117,7 +117,7 @@ try {
             # Execute the insert command
             $cmd.ExecuteNonQuery()
 
-            Write-Host "Inserted record for Name: $($_.Name)" -ForegroundColor Green
+            Write-Host "Inserted record for $($_)" -ForegroundColor Green
         
         } catch {
             Write-Host "SQL Error: $($_.Exception.Message)" -ForegroundColor Red
