@@ -2,11 +2,12 @@
 #Import-Module -Name "$PSScriptRoot\IDatabaseModule.psm1"
 
 
-class SqlServerDatabase : DatabaseNamespace.IDatabase {
+class SqlServerDatabase : DatabaseNamespace.IDatabase, DatabaseNamespace.ITransactionalDatabase {
     [string]$serverName
     [string]$databaseName
     [System.Data.SqlClient.SqlConnection]$conn
     [System.Data.SqlClient.SqlCommand]$cmd
+    [System.Data.SqlClient.SqlTransaction]$transaction
     [array]$dataList
 
     SqlServerDatabase([string]$serverName, [string]$databaseName, [array]$dataList) {
@@ -21,6 +22,29 @@ class SqlServerDatabase : DatabaseNamespace.IDatabase {
     [void] OpenConnection() {
         try {
             $this.conn.Open()
+            # Start the transaction
+            $this.transaction = $this.conn.BeginTransaction()
+            $this.cmd.Transaction = $this.transaction
+        } catch {
+            throw $_
+        }
+    }
+
+    [void] CommitTransaction() {
+        try {
+            if ($null -ne $this.transaction) {
+                $this.transaction.Commit()
+            }
+        } catch {
+            throw $_
+        }
+    }
+
+    [void] RollbackTransaction() {
+        try {
+            if ($null -ne $this.transaction) {
+                $this.transaction.Rollback()
+            }
         } catch {
             throw $_
         }
@@ -93,7 +117,6 @@ function Invoke-DatabaseOperation {
     )
 
     begin {
-
         Write-Host "Starting the processing of database objects..."
     }
 
@@ -107,11 +130,23 @@ function Invoke-DatabaseOperation {
                 # Execute the DML operation on the database
                 $DatabaseObject.ExecuteDml()
 
-                # Update statistics based on the number of successful operations
-                Write-Host "Operation executed successfully for the provided data list." -ForegroundColor Green
+                # Check if the object supports transactions
+                if ($DatabaseObject -is [DatabaseNamespace.ITransactionalDatabase]) {
+                    $DatabaseObject.CommitTransaction()
+                    Write-Host "Transaction committed successfully." -ForegroundColor Green
+                } else {
+                    Write-Host "Transaction support not available for this database." -ForegroundColor Yellow
+                }
 
             } catch {
                 Write-Host "Error during database operation: $($_.Exception.Message)" -ForegroundColor Red
+
+                # If the object supports transactions, roll it back
+                if ($DatabaseObject -is [DatabaseNamespace.ITransactionalDatabase]) {
+                    $DatabaseObject.RollbackTransaction()
+                    Write-Host "Transaction rolled back due to an error." -ForegroundColor Red
+                }
+
                 throw  # Propagate the error further if necessary
             }
         } else {
@@ -184,7 +219,7 @@ for ($i = 1; $i -le 500; $i++) {
 
     $sqlData += $row
     
-    Write-Host $row
+    Write-Host $row -ForegroundColor Yellow
     Write-Host "---------------------------------------------------"
 }
 
