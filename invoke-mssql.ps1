@@ -76,6 +76,7 @@ try {
 
     # Start transaction
     $transaction = $conn.BeginTransaction()
+    #$transaction = $conn.BeginTransaction([System.Data.IsolationLevel]::ReadCommitted)
     Write-Host "Transaction started."
 
     # Create a SQL Command object outside of the loop (singleton pattern)
