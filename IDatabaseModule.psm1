@@ -10,5 +10,11 @@ namespace DatabaseNamespace
         void CloseConnection();
         void ExecuteDml();
     }
+
+    public interface ITransactionalDatabase
+    {
+        void CommitTransaction();
+        void RollbackTransaction();
+    }
 }
 "@
