@@ -26,24 +26,23 @@ $hierarchy = @{
     "Coordinator" = @("Manager")
 }
 
-# Titles to be used with their corresponding counts for real-world proportions
+
 $positionsWithCount = @(
     @{ title = "President"; count = 1 },
     @{ title = "Chief Executive Officer (CEO)"; count = 1 },
-    @{ title = "Senior Vice President"; count = 2 },
-    @{ title = "Vice President"; count = 3 },
-    @{ title = "Director"; count = 5 },
-    @{ title = "Senior Director"; count = 5 },
-    @{ title = "Manager"; count = 15 },
-    @{ title = "Team Lead"; count = 20 },
-    @{ title = "Technician"; count = 30 },
-    @{ title = "Junior Technician"; count = 20 },
-    @{ title = "Senior Technician"; count = 10 },
-    @{ title = "Clerk"; count = 25 },
-    @{ title = "Junior Clerk"; count = 20 },
-    @{ title = "Coordinator"; count = 10 }
+    @{ title = "Senior Vice President"; count = 10 },
+    @{ title = "Vice President"; count = 50 },
+    @{ title = "Director"; count = 200 },
+    @{ title = "Senior Director"; count = 200 },
+    @{ title = "Manager"; count = 500 },
+    @{ title = "Team Lead"; count = 1000 },
+    @{ title = "Technician"; count = 5000 },
+    @{ title = "Junior Technician"; count = 4000 },
+    @{ title = "Senior Technician"; count = 1000 },
+    @{ title = "Clerk"; count = 3000 },
+    @{ title = "Junior Clerk"; count = 2500 },
+    @{ title = "Coordinator"; count = 1000 }
 )
-
 
 # Employees data
 $employees = @(
